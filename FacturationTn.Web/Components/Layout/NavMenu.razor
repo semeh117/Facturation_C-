@@ -1,0 +1,47 @@
+﻿<div class="top-row ps-3 navbar navbar-dark">
+    <div class="container-fluid">
+        <a class="navbar-brand" href="">FacturationTn.Web</a>
+    </div>
+</div>
+
+<input type="checkbox" title="Navigation menu" class="navbar-toggler" />
+
+<div class="nav-scrollable" onclick="document.querySelector('.navbar-toggler').click()">
+    <nav class="nav flex-column">
+        <div class="nav-item px-3">
+            <NavLink class="nav-link d-flex align-items-center gap-3" href="" Match="NavLinkMatch.All">
+                <i class="bi bi-house-door-fill fs-5" aria-hidden="true"></i> 
+                <span>Home</span>
+            </NavLink>
+        </div>
+        
+        <div class="nav-item px-3">
+            <NavLink class="nav-link d-flex align-items-center gap-3" href="produits">
+                <i class="bi bi-box-seam-fill fs-5" aria-hidden="true"></i> 
+                <span>Produits</span>
+            </NavLink>
+        </div>
+
+        <div class="nav-item px-3">
+            <NavLink class="nav-link d-flex align-items-center gap-3" href="clients">
+                <i class="bi bi-people-fill fs-5" aria-hidden="true"></i> 
+                <span>Clients</span>
+            </NavLink>
+            
+        </div>
+
+        <div class="nav-item px-3">
+            <NavLink class="nav-link d-flex align-items-center gap-3" href="nouvelle-facture">
+                <i class="bi bi-file-earmark-plus-fill fs-5" aria-hidden="true"></i> 
+                <span>Créer Facture</span>
+            </NavLink>
+        </div>
+
+        <div class="nav-item px-3">
+            <NavLink class="nav-link d-flex align-items-center gap-3" href="factures">
+                <i class="bi bi-receipt-cutoff fs-5" aria-hidden="true"></i> 
+                <span>Factures</span>
+            </NavLink>
+        </div>
+    </nav>
+</div>

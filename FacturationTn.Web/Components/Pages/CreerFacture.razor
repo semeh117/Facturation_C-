@@ -1,0 +1,172 @@
+@page "/nouvelle-facture"
+@using FacturationTn.Domain.Entities
+@using FacturationTn.Infrastructure.Persistence
+@using Microsoft.EntityFrameworkCore
+@inject ApplicationDbContext DbContext
+@rendermode InteractiveServer
+
+<PageTitle>Nouvelle Facture</PageTitle>
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h1>Créer une Facture</h1>
+    <h3 class="text-primary fw-bold">Total TTC: @nouvelleFacture.TotalTTC.ToString("F3") TND</h3>
+</div>
+
+<div class="row mb-4">
+    <div class="col-md-6">
+        <label class="form-label fw-bold">Sélectionner un Client</label>
+        <select class="form-select" @bind="nouvelleFacture.ClientId">
+            <option value="0">-- Choisir un client --</option>
+            @foreach (var c in clients)
+            {
+                <option value="@c.Id">@c.Nom @(string.IsNullOrEmpty(c.RaisonSociale) ? "" : $"({c.RaisonSociale})")</option>
+            }
+        </select>
+    </div>
+    <div class="col-md-6">
+        <label class="form-label fw-bold">Timbre Fiscal (TND)</label>
+        <input type="number" step="0.100" class="form-control" @bind="nouvelleFacture.TimbreFiscal" @bind:after="CalculerTotaux" />
+    </div>
+</div>
+
+<div class="card p-4 mb-4 shadow-sm border-0 bg-light">
+    <h5 class="mb-3">Ajouter un produit</h5>
+    <div class="row g-2">
+        <div class="col-md-5">
+            <select class="form-select" @bind="idProduitSelectionne">
+                <option value="0">-- Choisir un produit --</option>
+                @foreach (var p in produits)
+                {
+                    <option value="@p.Id">@p.Designation (@p.PrixUnitaireHT.ToString("F3") TND)</option>
+                }
+            </select>
+        </div>
+        <div class="col-md-3">
+            <input type="number" class="form-control" placeholder="Quantité" @bind="quantiteSaisie" />
+        </div>
+        <div class="col-md-4">
+            <button class="btn btn-secondary w-100 d-flex align-items-center justify-content-center gap-2" @onclick="AjouterLigne">
+                <i class="bi bi-cart-plus"></i> Ajouter à la facture
+            </button>
+        </div>
+    </div>
+</div>
+
+<table class="table table-hover table-striped shadow-sm mt-3">
+    <thead class="table-dark">
+        <tr>
+            <th>Produit</th>
+            <th>Prix U. HT</th>
+            <th>Qté</th>
+            <th>TVA</th>
+            <th>Total HT</th>
+            <th>Action</th>
+        </tr>
+    </thead>
+    <tbody>
+        @if (nouvelleFacture.LignesFacture == null || !nouvelleFacture.LignesFacture.Any())
+        {
+            <tr><td colspan="6" class="text-center text-muted">Aucun produit ajouté à cette facture pour le moment.</td></tr>
+        }
+        else
+        {
+            @foreach (var ligne in nouvelleFacture.LignesFacture)
+            {
+                var produit = produits.FirstOrDefault(p => p.Id == ligne.ProduitId);
+                <tr>
+                    <td class="fw-bold">@(produit?.Designation)</td>
+                    <td>@ligne.PrixUnitaireHTApplique.ToString("F3")</td>
+                    <td>@ligne.Quantite</td>
+                    <td>@ligne.TauxTVAApplique %</td>
+                    <td>@((ligne.PrixUnitaireHTApplique * ligne.Quantite).ToString("F3"))</td>
+                    <td>
+                        <button class="btn btn-sm btn-outline-danger" @onclick="() => SupprimerLigne(ligne)">
+                            <i class="bi bi-trash"></i>
+                        </button>
+                    </td>
+                </tr>
+            }
+        }
+    </tbody>
+</table>
+
+<div class="d-flex justify-content-end mt-4 mb-5">
+    <button class="btn btn-success btn-lg d-flex align-items-center gap-2 shadow" @onclick="EnregistrerFacture" disabled="@(nouvelleFacture.LignesFacture == null || !nouvelleFacture.LignesFacture.Any() || nouvelleFacture.ClientId == 0)">
+        <i class="bi bi-save"></i> Enregistrer la Facture
+    </button>
+</div>
+
+@code {
+    // FIX: Initialize the LignesFacture list directly inside the object!
+    private Facture nouvelleFacture = new() 
+    { 
+        DateFacture = DateTime.Now, 
+        TimbreFiscal = 1.000m,
+        LignesFacture = new List<LigneFacture>() 
+    };
+    
+    private List<Client> clients = new();
+    private List<Produit> produits = new();
+
+    private int idProduitSelectionne;
+    private int quantiteSaisie = 1;
+
+    protected override async Task OnInitializedAsync()
+    {
+        clients = await DbContext.Clients.ToListAsync();
+        produits = await DbContext.Produits.ToListAsync();
+    }
+
+    private void AjouterLigne()
+    {
+        var produit = produits.FirstOrDefault(p => p.Id == idProduitSelectionne);
+        if (produit != null && quantiteSaisie > 0)
+        {
+            var ligne = new LigneFacture
+            {
+                ProduitId = produit.Id,
+                Produit = produit,  // Add this line
+                Quantite = quantiteSaisie,
+                PrixUnitaireHTApplique = produit.PrixUnitaireHT,
+                TauxTVAApplique = produit.TauxTVA
+            };
+
+            // Add directly to the invoice
+            nouvelleFacture.LignesFacture.Add(ligne);
+            CalculerTotaux();
+
+            idProduitSelectionne = 0;
+            quantiteSaisie = 1;
+        }
+    }
+
+    private void SupprimerLigne(LigneFacture ligne)
+    {
+        nouvelleFacture.LignesFacture.Remove(ligne);
+        CalculerTotaux();
+    }
+
+    private void CalculerTotaux()
+    {
+        nouvelleFacture.TotalHT = nouvelleFacture.LignesFacture.Sum(l => l.PrixUnitaireHTApplique * l.Quantite);
+        nouvelleFacture.TotalTVA = nouvelleFacture.LignesFacture.Sum(l => (l.PrixUnitaireHTApplique * l.Quantite) * (l.TauxTVAApplique / 100m));
+        nouvelleFacture.TotalTTC = nouvelleFacture.TotalHT + nouvelleFacture.TotalTVA + nouvelleFacture.TimbreFiscal;
+    }
+
+    private async Task EnregistrerFacture()
+    {
+        if (nouvelleFacture.ClientId != 0 && nouvelleFacture.LignesFacture.Any())
+        {
+            DbContext.Factures.Add(nouvelleFacture);
+            await DbContext.SaveChangesAsync();
+
+            // Reset completely for the next invoice
+            nouvelleFacture = new() 
+            { 
+                DateFacture = DateTime.Now, 
+                TimbreFiscal = 1.000m,
+                LignesFacture = new List<LigneFacture>() 
+            };
+        }
+    }
+}

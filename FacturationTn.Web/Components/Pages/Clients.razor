@@ -1,0 +1,89 @@
+@page "/clients"
+@using FacturationTn.Domain.Entities
+@using FacturationTn.Infrastructure.Persistence
+@using Microsoft.EntityFrameworkCore
+@inject ApplicationDbContext DbContext
+@rendermode InteractiveServer
+
+<PageTitle>Gestion des Clients</PageTitle>
+
+<h1>Nos Clients</h1>
+
+<div class="card p-3 mb-4 shadow-sm">
+    <div class="row g-2">
+        <div class="col-md-4">
+            <input @bind="nouveauClient.Nom" class="form-control" placeholder="Nom complet ou Société *" />
+        </div>
+        <div class="col-md-4">
+            <input @bind="nouveauClient.MatriculeFiscal" class="form-control" placeholder="Matricule Fiscal / CIN" />
+        </div>
+        <div class="col-md-4">
+            <input @bind="nouveauClient.Telephone" class="form-control" placeholder="Téléphone" />
+        </div>
+        <div class="col-md-5">
+            <input @bind="nouveauClient.Email" type="email" class="form-control" placeholder="Email" />
+        </div>
+        <div class="col-md-5">
+            <input @bind="nouveauClient.Adresse" class="form-control" placeholder="Adresse complète" />
+        </div>
+        <div class="col-md-2 d-grid">
+            <button class="btn btn-primary" @onclick="AjouterClient">Ajouter</button>
+        </div>
+    </div>
+</div>
+
+<table class="table table-hover table-striped mt-4 shadow-sm">
+    <thead class="table-dark">
+        <tr>
+            <th>Nom / Société</th>
+            <th>ID / Matricule</th>
+            <th>Contact</th>
+            <th>Adresse</th>
+        </tr>
+    </thead>
+    <tbody>
+        @if (!clients.Any())
+        {
+            <tr><td colspan="4" class="text-center">Aucun client dans la base de données.</td></tr>
+        }
+        @foreach (var c in clients)
+        {
+            <tr>
+                <td class="fw-bold">@c.Nom</td>
+                <td>@c.MatriculeFiscal</td>
+                <td>
+                    <div><i class="bi bi-telephone"></i> @c.Telephone</div>
+                    <div class="text-muted"><small>@c.Email</small></div>
+                </td>
+                <td>@c.Adresse</td>
+            </tr>
+        }
+    </tbody>
+</table>
+
+@code {
+    private List<Client> clients = new();
+    private Client nouveauClient = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        await ChargerClients();
+    }
+
+    private async Task ChargerClients()
+    {
+        clients = await DbContext.Clients.ToListAsync();
+    }
+
+    private async Task AjouterClient()
+    {
+        if (!string.IsNullOrWhiteSpace(nouveauClient.Nom))
+        {
+            DbContext.Clients.Add(nouveauClient);
+            await DbContext.SaveChangesAsync(); 
+            
+            nouveauClient = new(); // Reset form
+            await ChargerClients(); // Refresh list
+        }
+    }
+}

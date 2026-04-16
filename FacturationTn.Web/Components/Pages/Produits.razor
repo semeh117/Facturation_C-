@@ -1,0 +1,78 @@
+@page "/produits"
+@using FacturationTn.Domain.Entities
+@using FacturationTn.Infrastructure.Persistence
+@using Microsoft.EntityFrameworkCore
+@inject ApplicationDbContext DbContext
+@rendermode InteractiveServer
+
+<PageTitle>Gestion des Produits</PageTitle>
+
+<h1>Nos Produits</h1>
+
+<div class="row mb-4">
+    <div class="col-md-4">
+        <input @bind="nouveauProduit.Designation" class="form-control" placeholder="Désignation (ex: Clavier)" />
+    </div>
+    <div class="col-md-3">
+        <input @bind="nouveauProduit.PrixUnitaireHT" type="number" class="form-control" placeholder="Prix HT" />
+    </div>
+    <div class="col-md-3">
+        <input @bind="nouveauProduit.TauxTVA" type="number" class="form-control" placeholder="TVA (%)" />
+    </div>
+    <div class="col-md-2">
+        <button class="btn btn-primary" @onclick="AjouterProduit">Ajouter</button>
+    </div>
+</div>
+
+<table class="table table-striped mt-4">
+    <thead class="table-dark">
+        <tr>
+            <th>Désignation</th>
+            <th>Prix HT</th>
+            <th>TVA</th>
+        </tr>
+    </thead>
+    <tbody>
+        @if (!produits.Any())
+        {
+            <tr><td colspan="3">Aucun produit dans la base de données.</td></tr>
+        }
+        @foreach (var p in produits)
+        {
+            <tr>
+                <td>@p.Designation</td>
+                <td>@p.PrixUnitaireHT.ToString("F3") TND</td>
+                <td>@p.TauxTVA %</td>
+            </tr>
+        }
+    </tbody>
+</table>
+
+@code {
+    private List<Produit> produits = new();
+    
+    // Defaulting TVA to 19% (Standard in Tunisia)
+    private Produit nouveauProduit = new() { TauxTVA = 19 }; 
+
+    protected override async Task OnInitializedAsync()
+    {
+        await ChargerProduits();
+    }
+
+    private async Task ChargerProduits()
+    {
+        produits = await DbContext.Produits.ToListAsync();
+    }
+
+    private async Task AjouterProduit()
+    {
+        if (!string.IsNullOrWhiteSpace(nouveauProduit.Designation))
+        {
+            DbContext.Produits.Add(nouveauProduit);
+            await DbContext.SaveChangesAsync(); // Saves to the SQLite database
+            
+            nouveauProduit = new() { TauxTVA = 19 }; // Reset the form
+            await ChargerProduits(); // Refresh the table
+        }
+    }
+}

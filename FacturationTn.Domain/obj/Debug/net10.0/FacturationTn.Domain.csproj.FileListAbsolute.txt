@@ -1,0 +1,11 @@
+C:\Users\mechi\Desktop\.NET\project\FacturationTn\FacturationTn.Domain\bin\Debug\net10.0\FacturationTn.Domain.deps.json
+C:\Users\mechi\Desktop\.NET\project\FacturationTn\FacturationTn.Domain\bin\Debug\net10.0\FacturationTn.Domain.dll
+C:\Users\mechi\Desktop\.NET\project\FacturationTn\FacturationTn.Domain\bin\Debug\net10.0\FacturationTn.Domain.pdb
+C:\Users\mechi\Desktop\.NET\project\FacturationTn\FacturationTn.Domain\obj\Debug\net10.0\FacturationTn.Domain.GeneratedMSBuildEditorConfig.editorconfig
+C:\Users\mechi\Desktop\.NET\project\FacturationTn\FacturationTn.Domain\obj\Debug\net10.0\FacturationTn.Domain.AssemblyInfoInputs.cache
+C:\Users\mechi\Desktop\.NET\project\FacturationTn\FacturationTn.Domain\obj\Debug\net10.0\FacturationTn.Domain.AssemblyInfo.cs
+C:\Users\mechi\Desktop\.NET\project\FacturationTn\FacturationTn.Domain\obj\Debug\net10.0\FacturationTn.Domain.csproj.CoreCompileInputs.cache
+C:\Users\mechi\Desktop\.NET\project\FacturationTn\FacturationTn.Domain\obj\Debug\net10.0\FacturationTn.Domain.dll
+C:\Users\mechi\Desktop\.NET\project\FacturationTn\FacturationTn.Domain\obj\Debug\net10.0\refint\FacturationTn.Domain.dll
+C:\Users\mechi\Desktop\.NET\project\FacturationTn\FacturationTn.Domain\obj\Debug\net10.0\FacturationTn.Domain.pdb
+C:\Users\mechi\Desktop\.NET\project\FacturationTn\FacturationTn.Domain\obj\Debug\net10.0\ref\FacturationTn.Domain.dll

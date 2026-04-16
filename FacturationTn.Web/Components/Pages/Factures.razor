@@ -1,0 +1,65 @@
+@page "/factures"
+@using FacturationTn.Domain.Entities
+@using FacturationTn.Infrastructure.Persistence
+@using Microsoft.EntityFrameworkCore
+@inject ApplicationDbContext DbContext
+
+<PageTitle>Historique des Factures</PageTitle>
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h1>Historique des Factures</h1>
+    <a href="/nouvelle-facture" class="btn btn-primary shadow-sm">
+        <i class="bi bi-plus-lg"></i> Nouvelle Facture
+    </a>
+</div>
+
+<table class="table table-striped table-hover mt-4 shadow-sm">
+    <thead class="table-dark">
+        <tr>
+            <th>N° Facture</th>
+            <th>Date</th>
+            <th>Client</th>
+            <th>Total HT</th>
+            <th>Total TVA</th>
+            <th>Total TTC</th>
+            <th>Action</th>
+        </tr>
+    </thead>
+    <tbody>
+        @if (!factures.Any())
+        {
+            <tr><td colspan="7" class="text-center text-muted">Aucune facture enregistrée pour le moment.</td></tr>
+        }
+        @foreach (var f in factures)
+        {
+            <tr>
+                <td class="fw-bold">FAC-@f.Id.ToString("D4")</td>
+                <td>@f.DateFacture.ToString("dd/MM/yyyy HH:mm")</td>
+                <td>
+                    <span class="fw-semibold">@(f.Client?.Nom ?? "Client Inconnu")</span>
+                </td>
+                <td>@f.TotalHT.ToString("F3")</td>
+                <td>@f.TotalTVA.ToString("F3")</td>
+                <td class="fw-bold text-success">@f.TotalTTC.ToString("F3") TND</td>
+                <td>
+                    <button class="btn btn-sm btn-outline-info" title="Voir les détails">
+                        <i class="bi bi-eye"></i>
+                    </button>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>
+
+@code {
+    private List<Facture> factures = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        factures = await DbContext.Factures
+            .Include(f => f.Client) 
+            .Include(f => f.LignesFacture) // <--- THIS BRINGS THE TOTALS TO LIFE!
+            .OrderByDescending(f => f.DateFacture)
+            .ToListAsync();
+    }
+}
