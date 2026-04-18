@@ -1,0 +1,91 @@
+@page "/factures/details/{Id:int}"
+@using FacturationTn.Domain.Entities
+@using FacturationTn.Infrastructure.Persistence
+@using Microsoft.EntityFrameworkCore
+@inject ApplicationDbContext DbContext
+
+<PageTitle>Détails de la Facture</PageTitle>
+
+@if (facture == null)
+{
+    <p><em>Chargement de la facture...</em></p>
+}
+else
+{
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2>Facture N° FAC-@facture.Id.ToString("D4")</h2>
+        <a href="/factures" class="btn btn-outline-secondary">
+            <i class="bi bi-arrow-left"></i> Retour à l'historique
+        </a>
+    </div>
+
+    <div class="card p-4 mb-4 shadow-sm border-0 bg-light">
+        <div class="row">
+            <div class="col-md-6">
+                <h5 class="fw-bold">Informations Client</h5>
+                <p class="mb-1"><strong>Nom :</strong> @(facture.Client?.Nom ?? "Inconnu")</p>
+                <p class="mb-1"><strong>Raison Sociale :</strong> @(facture.Client?.RaisonSociale ?? "N/A")</p>
+                <p class="mb-0"><strong>Matricule Fiscal :</strong> @(facture.Client?.MatriculeFiscal ?? "N/A")</p>
+            </div>
+            <div class="col-md-6 text-md-end">
+                <h5 class="fw-bold">Détails Facture</h5>
+                <p class="mb-1"><strong>Date :</strong> @facture.DateFacture.ToString("dd/MM/yyyy HH:mm")</p>
+                <p class="mb-0"><strong>Timbre Fiscal :</strong> @facture.TimbreFiscal.ToString("F3") TND</p>
+            </div>
+        </div>
+    </div>
+
+    <table class="table table-bordered shadow-sm mt-3 bg-white">
+        <thead class="table-dark">
+            <tr>
+                <th>Désignation</th>
+                <th>Prix U. HT</th>
+                <th>Qté</th>
+                <th>TVA</th>
+                <th>Total HT</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var ligne in facture.LignesFacture)
+            {
+                <tr>
+                    <td class="fw-bold">Produit #@ligne.ProduitId</td> 
+                    <td>@ligne.PrixUnitaireHTApplique.ToString("F3")</td>
+                    <td>@ligne.Quantite</td>
+                    <td>@ligne.TauxTVAApplique %</td>
+                    <td>@((ligne.PrixUnitaireHTApplique * ligne.Quantite).ToString("F3"))</td>
+                </tr>
+            }
+        </tbody>
+        <tfoot class="table-light fw-bold">
+            <tr>
+                <td colspan="4" class="text-end">Total HT :</td>
+                <td>@facture.TotalHT.ToString("F3") TND</td>
+            </tr>
+            <tr>
+                <td colspan="4" class="text-end">Total TVA :</td>
+                <td>@facture.TotalTVA.ToString("F3") TND</td>
+            </tr>
+            <tr class="table-success fs-5">
+                <td colspan="4" class="text-end">Total TTC :</td>
+                <td>@facture.TotalTTC.ToString("F3") TND</td>
+            </tr>
+        </tfoot>
+    </table>
+}
+
+@code {
+    [Parameter]
+    public int Id { get; set; }
+
+    private Facture? facture;
+
+    protected override async Task OnInitializedAsync()
+    {
+        // Load the specific invoice, including its client and lines
+        facture = await DbContext.Factures
+            .Include(f => f.Client)
+            .Include(f => f.LignesFacture)
+            .FirstOrDefaultAsync(f => f.Id == Id);
+    }
+}

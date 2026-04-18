@@ -9,3 +9,4 @@ C:\Users\mechi\Desktop\.NET\project\FacturationTn\FacturationTn.Domain\obj\Debug
 C:\Users\mechi\Desktop\.NET\project\FacturationTn\FacturationTn.Domain\obj\Debug\net10.0\refint\FacturationTn.Domain.dll
 C:\Users\mechi\Desktop\.NET\project\FacturationTn\FacturationTn.Domain\obj\Debug\net10.0\FacturationTn.Domain.pdb
 C:\Users\mechi\Desktop\.NET\project\FacturationTn\FacturationTn.Domain\obj\Debug\net10.0\ref\FacturationTn.Domain.dll
+C:\Users\mechi\Desktop\.NET\project\FacturationTn\FacturationTn.Domain\obj\Debug\net10.0\FacturationTn.Domain.sourcelink.json

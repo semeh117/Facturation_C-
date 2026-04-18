@@ -3,67 +3,103 @@
 @using FacturationTn.Infrastructure.Persistence
 @using Microsoft.EntityFrameworkCore
 @inject ApplicationDbContext DbContext
+@inject IJSRuntime JSRuntime
 @rendermode InteractiveServer
 
 <PageTitle>Gestion des Clients</PageTitle>
 
-<h1>Nos Clients</h1>
+<div class="mb-4">
+    <h1>Gestion des Clients</h1>
+</div>
 
-<div class="card p-3 mb-4 shadow-sm">
-    <div class="row g-2">
+<div class="card p-4 mb-5 shadow-sm border-0 bg-light">
+    <h5 class="mb-4 text-primary">@(isEditing ? "Modifier le Client" : "Ajouter un Nouveau Client")</h5>
+    
+    <div class="row g-3 mb-3">
         <div class="col-md-4">
-            <input @bind="nouveauClient.Nom" class="form-control" placeholder="Nom complet ou Société *" />
+            <label class="form-label fw-bold">Nom *</label>
+            <input type="text" class="form-control" @bind="currentClient.Nom" placeholder="Ex: Foulen Ben Foulen" />
+        </div>
+
+        <div class="col-md-4">
+            <label class="form-label fw-bold">Matricule Fiscal</label>
+            <input type="text" class="form-control" @bind="currentClient.MatriculeFiscal" placeholder="Ex: 1234567/A/B/C/000" />
+        </div>
+    </div>
+    
+    <div class="row g-3">
+        <div class="col-md-4">
+            <label class="form-label fw-bold">Téléphone</label>
+            <input type="tel" class="form-control" @bind="currentClient.Telephone" placeholder="Ex: 22 333 444" />
         </div>
         <div class="col-md-4">
-            <input @bind="nouveauClient.MatriculeFiscal" class="form-control" placeholder="Matricule Fiscal / CIN" />
+            <label class="form-label fw-bold">Email</label>
+            <input type="email" class="form-control" @bind="currentClient.Email" placeholder="Ex: contact@client.com" />
         </div>
         <div class="col-md-4">
-            <input @bind="nouveauClient.Telephone" class="form-control" placeholder="Téléphone" />
+            <label class="form-label fw-bold">Adresse</label>
+            <input type="text" class="form-control" @bind="currentClient.Adresse" placeholder="Ex: 123 Rue de la République, Tunis" />
         </div>
-        <div class="col-md-5">
-            <input @bind="nouveauClient.Email" type="email" class="form-control" placeholder="Email" />
-        </div>
-        <div class="col-md-5">
-            <input @bind="nouveauClient.Adresse" class="form-control" placeholder="Adresse complète" />
-        </div>
-        <div class="col-md-2 d-grid">
-            <button class="btn btn-primary" @onclick="AjouterClient">Ajouter</button>
-        </div>
+    </div>
+
+    <div class="mt-4 d-flex justify-content-end gap-2">
+        @if (isEditing)
+        {
+            <button class="btn btn-secondary" @onclick="AnnulerEdition">Annuler</button>
+        }
+        <button class="btn btn-success d-flex align-items-center gap-2" @onclick="SauvegarderClient" disabled="@string.IsNullOrWhiteSpace(currentClient.Nom)">
+            <i class="bi bi-save"></i> @(isEditing ? "Mettre à jour" : "Enregistrer")
+        </button>
     </div>
 </div>
 
-<table class="table table-hover table-striped mt-4 shadow-sm">
-    <thead class="table-dark">
-        <tr>
-            <th>Nom / Société</th>
-            <th>ID / Matricule</th>
-            <th>Contact</th>
-            <th>Adresse</th>
-        </tr>
-    </thead>
-    <tbody>
-        @if (!clients.Any())
-        {
-            <tr><td colspan="4" class="text-center">Aucun client dans la base de données.</td></tr>
-        }
-        @foreach (var c in clients)
-        {
+<div class="table-responsive">
+    <table class="table table-striped table-hover shadow-sm">
+        <thead class="table-dark">
             <tr>
-                <td class="fw-bold">@c.Nom</td>
-                <td>@c.MatriculeFiscal</td>
-                <td>
-                    <div><i class="bi bi-telephone"></i> @c.Telephone</div>
-                    <div class="text-muted"><small>@c.Email</small></div>
-                </td>
-                <td>@c.Adresse</td>
+                <th>ID</th>
+                <th>Nom</th>
+                
+                <th>Matricule Fiscal</th>
+                <th>Téléphone</th>
+                <th>Email</th>
+                <th>Actions</th>
             </tr>
-        }
-    </tbody>
-</table>
+        </thead>
+        <tbody>
+            @if (!clients.Any())
+            {
+                <tr><td colspan="7" class="text-center text-muted">Aucun client enregistré.</td></tr>
+            }
+            @foreach (var c in clients)
+            {
+                <tr>
+                    <td class="fw-bold">@c.Id</td>
+                    <td>@c.Nom</td>
+                    
+                    <td>@(string.IsNullOrWhiteSpace(c.MatriculeFiscal) ? "-" : c.MatriculeFiscal)</td>
+                    <td>@(string.IsNullOrWhiteSpace(c.Telephone) ? "-" : c.Telephone)</td>
+                    <td>@(string.IsNullOrWhiteSpace(c.Email) ? "-" : c.Email)</td>
+                    <td>
+                        <div class="d-flex gap-2">
+                            <button class="btn btn-sm btn-outline-primary" title="Modifier" @onclick="() => EditerClient(c)">
+                                <i class="bi bi-pencil"></i>
+                            </button>
+                            <button class="btn btn-sm btn-outline-danger" title="Supprimer" @onclick="() => SupprimerClient(c)">
+                                <i class="bi bi-trash"></i>
+                            </button>
+                        </div>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>
 
 @code {
     private List<Client> clients = new();
-    private Client nouveauClient = new();
+    private Client currentClient = new();
+    private bool isEditing = false;
 
     protected override async Task OnInitializedAsync()
     {
@@ -75,15 +111,62 @@
         clients = await DbContext.Clients.ToListAsync();
     }
 
-    private async Task AjouterClient()
+    private void EditerClient(Client client)
     {
-        if (!string.IsNullOrWhiteSpace(nouveauClient.Nom))
+        // Copy all fields directly from your entity structure
+        currentClient = new Client
         {
-            DbContext.Clients.Add(nouveauClient);
-            await DbContext.SaveChangesAsync(); 
-            
-            nouveauClient = new(); // Reset form
-            await ChargerClients(); // Refresh list
+            Id = client.Id,
+            Nom = client.Nom,
+            MatriculeFiscal = client.MatriculeFiscal,
+            Adresse = client.Adresse,
+            Telephone = client.Telephone,
+            Email = client.Email
+        };
+        isEditing = true;
+    }
+
+    private void AnnulerEdition()
+    {
+        currentClient = new();
+        isEditing = false;
+    }
+
+    private async Task SauvegarderClient()
+    {
+        if (isEditing)
+        {
+            var clientToUpdate = await DbContext.Clients.FindAsync(currentClient.Id);
+            if (clientToUpdate != null)
+            {
+                // Update all fields
+                clientToUpdate.Nom = currentClient.Nom;
+                clientToUpdate.MatriculeFiscal = currentClient.MatriculeFiscal;
+                clientToUpdate.Adresse = currentClient.Adresse;
+                clientToUpdate.Telephone = currentClient.Telephone;
+                clientToUpdate.Email = currentClient.Email;
+                
+                DbContext.Clients.Update(clientToUpdate);
+            }
+        }
+        else
+        {
+            DbContext.Clients.Add(currentClient);
+        }
+
+        await DbContext.SaveChangesAsync();
+        AnnulerEdition(); 
+        await ChargerClients(); 
+    }
+
+    private async Task SupprimerClient(Client client)
+    {
+        bool confirmed = await JSRuntime.InvokeAsync<bool>("confirm", $"Êtes-vous sûr de vouloir supprimer le client {client.Nom} ?");
+        if (confirmed)
+        {
+            DbContext.Clients.Remove(client);
+            await DbContext.SaveChangesAsync();
+            await ChargerClients();
         }
     }
 }

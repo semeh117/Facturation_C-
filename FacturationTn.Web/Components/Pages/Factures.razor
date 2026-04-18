@@ -3,6 +3,8 @@
 @using FacturationTn.Infrastructure.Persistence
 @using Microsoft.EntityFrameworkCore
 @inject ApplicationDbContext DbContext
+@inject IJSRuntime JSRuntime
+@rendermode InteractiveServer
 
 <PageTitle>Historique des Factures</PageTitle>
 
@@ -22,7 +24,7 @@
             <th>Total HT</th>
             <th>Total TVA</th>
             <th>Total TTC</th>
-            <th>Action</th>
+            <th>Actions</th>
         </tr>
     </thead>
     <tbody>
@@ -42,9 +44,14 @@
                 <td>@f.TotalTVA.ToString("F3")</td>
                 <td class="fw-bold text-success">@f.TotalTTC.ToString("F3") TND</td>
                 <td>
-                    <button class="btn btn-sm btn-outline-info" title="Voir les détails">
-                        <i class="bi bi-eye"></i>
-                    </button>
+                    <div class="d-flex gap-2">
+                        <a href="/factures/details/@f.Id" class="btn btn-sm btn-outline-info" title="Voir les détails">
+                            <i class="bi bi-eye"></i>
+                        </a>
+                        <button class="btn btn-sm btn-outline-danger" title="Supprimer" @onclick="() => SupprimerFacture(f)">
+                            <i class="bi bi-trash"></i>
+                        </button>
+                    </div>
                 </td>
             </tr>
         }
@@ -56,10 +63,31 @@
 
     protected override async Task OnInitializedAsync()
     {
+        await ChargerFactures();
+    }
+
+    private async Task ChargerFactures()
+    {
         factures = await DbContext.Factures
-            .Include(f => f.Client) 
-            .Include(f => f.LignesFacture) // <--- THIS BRINGS THE TOTALS TO LIFE!
+            .Include(f => f.Client)
+            .Include(f => f.LignesFacture)
             .OrderByDescending(f => f.DateFacture)
             .ToListAsync();
+    }
+
+    private async Task SupprimerFacture(Facture facture)
+    {
+        // Show a browser confirmation dialog
+        bool confirmed = await JSRuntime.InvokeAsync<bool>("confirm", $"Êtes-vous sûr de vouloir supprimer la facture FAC-{facture.Id:D4} ?");
+        
+        if (confirmed)
+        {
+            // Remove from database
+            DbContext.Factures.Remove(facture);
+            await DbContext.SaveChangesAsync();
+            
+            // Reload the list to update the UI
+            await ChargerFactures();
+        }
     }
 }

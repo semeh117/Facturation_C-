@@ -13,3 +13,4 @@ C:\Users\mechi\Desktop\.NET\project\FacturationTn\FacturationTn.Application\obj\
 C:\Users\mechi\Desktop\.NET\project\FacturationTn\FacturationTn.Application\obj\Debug\net10.0\refint\FacturationTn.Application.dll
 C:\Users\mechi\Desktop\.NET\project\FacturationTn\FacturationTn.Application\obj\Debug\net10.0\FacturationTn.Application.pdb
 C:\Users\mechi\Desktop\.NET\project\FacturationTn\FacturationTn.Application\obj\Debug\net10.0\ref\FacturationTn.Application.dll
+C:\Users\mechi\Desktop\.NET\project\FacturationTn\FacturationTn.Application\obj\Debug\net10.0\FacturationTn.Application.sourcelink.json
