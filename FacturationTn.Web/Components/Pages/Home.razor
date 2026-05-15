@@ -1,7 +1,214 @@
 ﻿@page "/"
+@using FacturationTn.Domain.Entities
+@using FacturationTn.Infrastructure.Persistence
+@using Microsoft.EntityFrameworkCore
+@using Radzen
+@using Radzen.Blazor
+@inject ApplicationDbContext DbContext
+@rendermode InteractiveServer
 
-<PageTitle>Home</PageTitle>
+<PageTitle>Tableau de Bord</PageTitle>
 
-<h1>Hello, world!</h1>
+<div class="mb-4 d-flex justify-content-between align-items-center">
+    <h1>Tableau de Bord</h1>
+    <span class="text-muted"><i class="bi bi-calendar3"></i> Période : Globale</span>
+</div>
 
-Welcome to your new app.
+@if (isLoading)
+{
+    <p><em>Chargement des statistiques...</em></p>
+}
+else
+{
+    <h3 class="mt-4 mb-3 text-primary border-bottom pb-2"><i class="bi bi-bank"></i> Tableau de Bord Fiscal</h3>
+    <div class="row g-4 mb-4">
+        <div class="col-md-6">
+            <div class="card bg-light shadow-sm border-0 h-100">
+                <div class="card-body">
+                    <h6 class="card-title text-muted text-uppercase fw-bold">Total TVA Collectée</h6>
+                    <h2 class="text-danger fw-bold">@totalTvaCollected.ToString("F3") TND</h2>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="card bg-light shadow-sm border-0 h-100">
+                <div class="card-body">
+                    <h6 class="card-title text-muted text-uppercase fw-bold">Total Timbre Fiscal</h6>
+                    <h2 class="text-warning fw-bold">@totalTimbreCollected.ToString("F3") TND</h2>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="card shadow-sm border-0 mb-5">
+        <div class="card-header bg-dark text-white fw-bold">Répartition de la TVA par Taux</div>
+        <div class="card-body">
+            <RadzenChart>
+                <RadzenPieSeries Data="@tvaByRate" Title="TVA Collectée" CategoryProperty="Rate" ValueProperty="TotalTVA">
+                    <RadzenSeriesDataLabels Visible="true" />
+                </RadzenPieSeries>
+            </RadzenChart>
+        </div>
+    </div>
+
+    <h3 class="mt-5 mb-3 text-success border-bottom pb-2"><i class="bi bi-graph-up-arrow"></i> Tableau de Bord des Ventes</h3>
+    
+    <div class="row g-4 mb-4">
+        <div class="col-md-6">
+            <div class="card text-white bg-secondary shadow-sm border-0 h-100">
+                <div class="card-body">
+                    <h6 class="card-title text-uppercase fw-bold">Chiffre d'Affaires Total (HT)</h6>
+                    <h2 class="fw-bold">@totalRevenueHT.ToString("F3") TND</h2>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="card text-white bg-success shadow-sm border-0 h-100">
+                <div class="card-body">
+                    <h6 class="card-title text-uppercase fw-bold">Chiffre d'Affaires Total (TTC)</h6>
+                    <h2 class="fw-bold">@totalRevenueTTC.ToString("F3") TND</h2>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row g-4 mb-5">
+        <div class="col-md-12">
+            <div class="card shadow-sm border-0">
+                <div class="card-header bg-dark text-white fw-bold">Évolution du CA par Période (Mensuel)</div>
+                <div class="card-body">
+                    <RadzenChart>
+                        <RadzenColumnSeries Data="@revenuePerMonth" CategoryProperty="Period" Title="CA HT" ValueProperty="TotalHT" />
+                        <RadzenColumnSeries Data="@revenuePerMonth" CategoryProperty="Period" Title="CA TTC" ValueProperty="TotalTTC" Fill="#198754" />
+                        <RadzenColumnOptions Radius="5" />
+                        <RadzenValueAxis>
+                            <RadzenGridLines Visible="true" />
+                            <RadzenAxisTitle Text="Montant (TND)" />
+                        </RadzenValueAxis>
+                    </RadzenChart>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-6">
+            <div class="card shadow-sm border-0 h-100">
+                <div class="card-header bg-dark text-white fw-bold">Top Clients (CA TTC)</div>
+                <div class="card-body">
+                    <RadzenChart>
+                        <RadzenBarSeries Data="@revenuePerClient" CategoryProperty="ClientName" Title="CA TTC" ValueProperty="TotalTTC" Fill="#ff6600" />
+                        <RadzenValueAxis>
+                            <RadzenGridLines Visible="true" />
+                        </RadzenValueAxis>
+                    </RadzenChart>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-6">
+            <div class="card shadow-sm border-0 h-100">
+                <div class="card-header bg-dark text-white fw-bold">Top Produits (CA HT)</div>
+                <div class="card-body">
+                    <RadzenChart>
+                        <RadzenBarSeries Data="@revenuePerProduct" CategoryProperty="ProductName" Title="CA HT" ValueProperty="TotalHT" Fill="#0dcaf0" />
+                        <RadzenValueAxis>
+                            <RadzenGridLines Visible="true" />
+                        </RadzenValueAxis>
+                    </RadzenChart>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
+@code {
+    private bool isLoading = true;
+
+    // --- Indicateurs Fiscaux ---
+    private decimal totalTvaCollected = 0;
+    private decimal totalTimbreCollected = 0;
+    private List<TvaRateSum> tvaByRate = new();
+
+    // --- Indicateurs de Ventes ---
+    private decimal totalRevenueHT = 0;
+    private decimal totalRevenueTTC = 0;
+    private List<MonthRevenue> revenuePerMonth = new();
+    private List<ClientRevenue> revenuePerClient = new();
+    private List<ProductRevenue> revenuePerProduct = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        await ChargerStatistiques();
+        isLoading = false;
+    }
+
+    private async Task ChargerStatistiques()
+    {
+        // 1. Fetch all data needed
+        var factures = await DbContext.Factures
+            .Include(f => f.Client)
+            .Include(f => f.LignesFacture)
+            .ToListAsync();
+
+        var produits = await DbContext.Produits.ToListAsync();
+
+        if (!factures.Any()) return;
+
+        // 2. Calculs Globaux
+        totalTvaCollected = factures.Sum(f => f.TotalTVA);
+        totalTimbreCollected = factures.Sum(f => f.TimbreFiscal);
+        totalRevenueHT = factures.Sum(f => f.TotalHT);
+        totalRevenueTTC = factures.Sum(f => f.TotalTTC);
+
+        // 3. TVA par taux 
+        tvaByRate = factures.SelectMany(f => f.LignesFacture)
+            .GroupBy(l => l.TauxTVAApplique)
+            .Select(g => new TvaRateSum
+            {
+                Rate = g.Key,
+                TotalTVA = g.Sum(l => l.PrixUnitaireHTApplique * (l.Quantite * l.TauxTVAApplique / 100))
+            })
+            .OrderByDescending(t => t.Rate)
+            .ToList();
+
+        // 4. CA par Période (Mois)
+        revenuePerMonth = factures
+            .GroupBy(f => new { f.DateFacture.Year, f.DateFacture.Month })
+            .Select(g => new MonthRevenue
+            {
+                Period = $"{g.Key.Month:D2}/{g.Key.Year}",
+                TotalHT = g.Sum(f => f.TotalHT),
+                TotalTTC = g.Sum(f => f.TotalTTC)
+            })
+            .OrderByDescending(m => m.Period)
+            .ToList();
+
+        // 5. CA par Client
+        revenuePerClient = factures
+            .GroupBy(f => f.Client?.Nom ?? "Client Supprimé/Inconnu")
+            .Select(g => new ClientRevenue
+            {
+                ClientName = g.Key,
+                TotalHT = g.Sum(f => f.TotalHT),
+                TotalTTC = g.Sum(f => f.TotalTTC)
+            })
+            .OrderByDescending(c => c.TotalTTC)
+            .ToList();
+
+        // 6. CA par Produit
+        revenuePerProduct = factures.SelectMany(f => f.LignesFacture)
+            .GroupBy(l => l.ProduitId)
+            .Select(g => new ProductRevenue
+            {
+                ProductName = produits.FirstOrDefault(p => p.Id == g.Key)?.Designation ?? $"Produit #{g.Key}",
+                TotalHT = g.Sum(l => l.PrixUnitaireHTApplique * l.Quantite)
+            })
+            .OrderByDescending(p => p.TotalHT)
+            .ToList();
+    }
+
+    // --- Classes pour structurer les données du Dashboard ---
+    private class TvaRateSum { public decimal Rate { get; set; } public decimal TotalTVA { get; set; } }
+    private class MonthRevenue { public string Period { get; set; } = string.Empty; public decimal TotalHT { get; set; } public decimal TotalTTC { get; set; } }
+    private class ClientRevenue { public string ClientName { get; set; } = string.Empty; public decimal TotalHT { get; set; } public decimal TotalTTC { get; set; } }
+    private class ProductRevenue { public string ProductName { get; set; } = string.Empty; public decimal TotalHT { get; set; } }
+}

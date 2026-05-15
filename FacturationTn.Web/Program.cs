@@ -2,6 +2,7 @@ using FacturationTn.Web.Components;
 using FacturationTn.Infrastructure.Persistence;
 using FacturationTn.Application.Services;
 using Microsoft.EntityFrameworkCore;
+using Radzen;
 
 
 var builder = WebApplication.CreateBuilder(args);
@@ -17,6 +18,7 @@ builder.Services.AddDbContext<ApplicationDbContext>(options =>
 
 // 2. Register the Application Services
 builder.Services.AddScoped<FactureService>();
+builder.Services.AddRadzenComponents();
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.

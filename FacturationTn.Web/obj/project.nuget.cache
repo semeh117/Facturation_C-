@@ -1,6 +1,6 @@
 {
   "version": 2,
-  "dgSpecHash": "Sck2nyYJXFU=",
+  "dgSpecHash": "EgS+VP1pHpY=",
   "success": true,
   "projectFilePath": "C:\\Users\\mechi\\Desktop\\.NET\\project\\FacturationTn\\FacturationTn.Web\\FacturationTn.Web.csproj",
   "expectedPackageFiles": [
@@ -25,6 +25,7 @@
     "C:\\Users\\mechi\\.nuget\\packages\\microsoft.visualstudio.solutionpersistence\\1.0.52\\microsoft.visualstudio.solutionpersistence.1.0.52.nupkg.sha512",
     "C:\\Users\\mechi\\.nuget\\packages\\mono.texttemplating\\3.0.0\\mono.texttemplating.3.0.0.nupkg.sha512",
     "C:\\Users\\mechi\\.nuget\\packages\\newtonsoft.json\\13.0.3\\newtonsoft.json.13.0.3.nupkg.sha512",
+    "C:\\Users\\mechi\\.nuget\\packages\\radzen.blazor\\10.4.3\\radzen.blazor.10.4.3.nupkg.sha512",
     "C:\\Users\\mechi\\.nuget\\packages\\sqlitepclraw.bundle_e_sqlite3\\2.1.11\\sqlitepclraw.bundle_e_sqlite3.2.1.11.nupkg.sha512",
     "C:\\Users\\mechi\\.nuget\\packages\\sqlitepclraw.core\\2.1.11\\sqlitepclraw.core.2.1.11.nupkg.sha512",
     "C:\\Users\\mechi\\.nuget\\packages\\sqlitepclraw.lib.e_sqlite3\\2.1.11\\sqlitepclraw.lib.e_sqlite3.2.1.11.nupkg.sha512",
