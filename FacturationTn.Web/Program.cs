@@ -96,9 +96,7 @@ app.MapStaticAssets();
 app.MapRazorComponents<App>()
     .AddInteractiveServerRenderMode();
 
-// =========================================================================
-// 5. TEACHER'S APPROACH: MINIMAL API AUTHENTICATION ENDPOINTS (Outside WebSocket)
-// =========================================================================
+
 app.MapPost("/api/auth/login", async (
     [FromServices] SignInManager<IdentityUser> signInManager,
     [FromForm] string email, 
@@ -117,6 +115,4 @@ app.MapPost("/api/auth/logout", async ([FromServices] SignInManager<IdentityUser
     await signInManager.SignOutAsync();
     return Results.Redirect("/");
 }).DisableAntiforgery();
-// =========================================================================
-
 app.Run();

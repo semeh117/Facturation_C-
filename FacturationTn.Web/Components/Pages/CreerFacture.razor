@@ -98,8 +98,7 @@
 </div>
 
 @code {
-    // FIX: Initialize the LignesFacture list directly inside the object!
-    private Facture nouvelleFacture = new() 
+        private Facture nouvelleFacture = new() 
     { 
         DateFacture = DateTime.Now, 
         TimbreFiscal = 1.000m,
@@ -126,7 +125,7 @@
             var ligne = new LigneFacture
             {
                 ProduitId = produit.Id,
-                Produit = produit,  // Add this line
+                Produit = produit,  
                 Quantite = quantiteSaisie,
                 PrixUnitaireHTApplique = produit.PrixUnitaireHT,
                 TauxTVAApplique = produit.TauxTVA
