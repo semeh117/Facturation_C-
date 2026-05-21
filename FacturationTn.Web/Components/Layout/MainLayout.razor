@@ -6,8 +6,18 @@
     </div>
 
     <main>
-        <div class="top-row px-4">
-            <a href="https://learn.microsoft.com/aspnet/core/" target="_blank">About</a>
+        <div class="top-row px-4 d-flex justify-content-end align-items-center">
+            <AuthorizeView Context="authState">
+                <Authorized>
+                    <span class="me-3 fw-bold text-success">👤 @authState.User.Identity?.Name</span>
+                    <form method="post" action="/api/auth/logout" data-enhance="false" class="d-inline">
+                        <button type="submit" class="btn btn-sm btn-outline-danger">Déconnexion</button>
+                    </form>
+                </Authorized>
+                <NotAuthorized>
+                    <a href="/login" class="btn btn-primary btn-sm">Se connecter</a>
+                </NotAuthorized>
+            </AuthorizeView>
         </div>
 
         <article class="content px-4">

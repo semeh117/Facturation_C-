@@ -1,4 +1,5 @@
 @page "/factures/details/{Id:int}"
+@attribute [Authorize(Roles = "Admin")]
 @using FacturationTn.Domain.Entities
 @using FacturationTn.Infrastructure.Persistence
 @using Microsoft.EntityFrameworkCore

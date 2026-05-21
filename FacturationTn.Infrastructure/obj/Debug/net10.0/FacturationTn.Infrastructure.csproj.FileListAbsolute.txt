@@ -8,9 +8,9 @@ C:\Users\mechi\Desktop\.NET\project\FacturationTn\FacturationTn.Infrastructure\o
 C:\Users\mechi\Desktop\.NET\project\FacturationTn\FacturationTn.Infrastructure\obj\Debug\net10.0\FacturationTn.Infrastructure.AssemblyInfoInputs.cache
 C:\Users\mechi\Desktop\.NET\project\FacturationTn\FacturationTn.Infrastructure\obj\Debug\net10.0\FacturationTn.Infrastructure.AssemblyInfo.cs
 C:\Users\mechi\Desktop\.NET\project\FacturationTn\FacturationTn.Infrastructure\obj\Debug\net10.0\FacturationTn.Infrastructure.csproj.CoreCompileInputs.cache
+C:\Users\mechi\Desktop\.NET\project\FacturationTn\FacturationTn.Infrastructure\obj\Debug\net10.0\FacturationTn.Infrastructure.sourcelink.json
 C:\Users\mechi\Desktop\.NET\project\FacturationTn\FacturationTn.Infrastructure\obj\Debug\net10.0\Facturat.B55FAE0A.Up2Date
 C:\Users\mechi\Desktop\.NET\project\FacturationTn\FacturationTn.Infrastructure\obj\Debug\net10.0\FacturationTn.Infrastructure.dll
 C:\Users\mechi\Desktop\.NET\project\FacturationTn\FacturationTn.Infrastructure\obj\Debug\net10.0\refint\FacturationTn.Infrastructure.dll
 C:\Users\mechi\Desktop\.NET\project\FacturationTn\FacturationTn.Infrastructure\obj\Debug\net10.0\FacturationTn.Infrastructure.pdb
 C:\Users\mechi\Desktop\.NET\project\FacturationTn\FacturationTn.Infrastructure\obj\Debug\net10.0\ref\FacturationTn.Infrastructure.dll
-C:\Users\mechi\Desktop\.NET\project\FacturationTn\FacturationTn.Infrastructure\obj\Debug\net10.0\FacturationTn.Infrastructure.sourcelink.json
